@@ -1,0 +1,27 @@
+#hdr
+#include "WS/WebSocket.hpp"
+#include "WS/WebSocketWS.hpp"
+#include "WS/WebSocketWSS.hpp"
+#end
+
+using namespace MM::WS;
+
+namespace MM
+{
+    namespace WS
+    {
+        class WSHelper
+        {
+        public:
+            static WebSocketWS* CreateWS(WSMSGFUNC msghandler, string addr, string getparam, u16 port = 80)
+            {
+                return new WebSocketWS(addr, getparam, port, msghandler);
+            }
+            
+            static WebSocketWSS* CreateWSS(WSMSGFUNC msghandler, string addr, string getparam, u16 port = 443)
+            {
+                return new WebSocketWSS(addr, getparam, port, msghandler);
+            }
+        }
+    }
+}

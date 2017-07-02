@@ -1,0 +1,117 @@
+/*
+    WebSocketWS.lpp - WebSocket implementation
+    Copyright (C) 2017 Sono (https://github.com/MarcuzD)
+    
+    This program is free software: you can redistribute it and/or modify  
+    it under the terms of the GNU Lesser General Public License as   
+    published by the Free Software Foundation, either version 3, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful, but 
+    WITHOUT ANY WARRANTY; without even the implied warranty of 
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+    Lesser General Lesser Public License for more details.
+    
+    You should have received a copy of the GNU Lesser General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+#hdr
+#include <3ds.h>
+
+extern "C"
+{
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <errno.h>
+#include <poll.h>
+#include <arpa/inet.h>
+
+#include <wslay/wslay.h>
+}
+
+#include <string>
+#include <functional>
+
+
+#include "WS/WebSocket.hpp"
+
+using namespace std;
+using MM::WS::WebSocket;
+#end
+
+
+namespace MM
+{
+    namespace WS
+    {
+        class WebSocketWS : public WebSocket
+        {
+        private:
+            int userdata;
+            
+        public:
+            WebSocketWS(string addr, string getparam, u16 port, WSMSGFUNC msghandler) : WebSocket(addr, getparam, port, msghandler)
+            {
+                userdata = 0;
+            }
+            
+            int Connect(int verify = 0)
+            {
+                int sock = opensock();
+                if(sock <= 0) return -1;
+                
+                userdata = sock;
+                
+                int ret = HTTP_Auth(verify);
+                if(ret)
+                {
+                    Disconnect();
+                    return -1;
+                }
+                
+                WebSocket::sock_mkasync(sock);
+                
+                if(wslctx) { wslay_event_context_free(wslctx); wslctx = nullptr; }
+                wslay_event_context_client_init(&wslctx, &wslcb, this);
+                
+                return 0;
+            }
+            
+            int Disconnect()
+            {
+                if(userdata)
+                {
+                    close(userdata);
+                    userdata = 0;
+                }
+                else return -1;
+                
+                if(wslctx) { wslay_event_context_free(wslctx); wslctx = nullptr; }
+                
+                return 0;
+            }
+            
+            int CheckConnect()
+            {
+                return userdata ? 1 : 0;
+            }
+            
+            int polldata(int wat, int timeo = 0)
+            {
+                return WebSocket::pollsock(userdata, wat, timeo);
+            }
+            
+            int recv_raw(void* buf, size_t len, int flags = 0)
+            {
+                return recv(userdata, buf, len, flags);
+            }
+            
+            int send_raw(const void* buf, size_t len, int flags = 0)
+            {
+                return send(userdata, buf, len, flags);
+            }
+        }
+    }
+}
