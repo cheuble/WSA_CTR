@@ -53,6 +53,7 @@ namespace MM
     namespace WS
     {
         typedef function<void(wslay_event_context_ptr ctx, const struct wslay_event_on_msg_recv_arg* arg)> WSMSGFUNC;
+        typedef function<void(bool conn)> WSCONNEVT;
         class WebSocket
         {
         protected:
@@ -65,9 +66,11 @@ namespace MM
             
             wslay_event_callbacks wslcb;
             wslay_event_context_ptr wslctx;
+        public:
             WSMSGFUNC msghandler;
+            WSCONNEVT connevent;
             
-            WebSocket(string addr, string getparam, u16 port, WSMSGFUNC msghandler) : addr(addr), getparam(getparam), port(port), msghandler(msghandler)
+            WebSocket(string addr, string getparam, u16 port) : addr(addr), getparam(getparam), port(port)
             {
                 sta = 0;
                 soc_errno = 0;
@@ -145,7 +148,7 @@ namespace MM
             {
                 WebSocket* ws = (WebSocket*)user_data;
                 
-                ws->msghandler(ctx, arg);
+                if(ws->msghandler) ws->msghandler(ctx, arg);
             }
         
         public:
@@ -168,6 +171,7 @@ namespace MM
                     DEBUGS("Disconnected");
                     sta &= ~2;
                     if(res < 0) return res;
+                    if(connevent) connevent(false);
                 }
                 
                 if(!CheckConnect())
@@ -178,6 +182,7 @@ namespace MM
                     DEBUGS("Connected");
                     sta &= ~1;
                     if(res < 0) return res;
+                    if(connevent) connevent(true);
                 }
                 
                 if(!CheckConnect()) return -1;

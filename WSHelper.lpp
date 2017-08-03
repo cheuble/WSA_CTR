@@ -13,14 +13,14 @@ namespace MM
         class WSHelper
         {
         public:
-            static WebSocketWS* CreateWS(WSMSGFUNC msghandler, string addr, string getparam, u16 port = 80)
+            static WebSocketWS* CreateWS(string addr, string getparam, u16 port = 80)
             {
-                return new WebSocketWS(addr, getparam, port, msghandler);
+                return new WebSocketWS(addr, getparam, port);
             }
             
-            static WebSocketWSS* CreateWSS(WSMSGFUNC msghandler, string addr, string getparam, u16 port = 443)
+            static WebSocketWSS* CreateWSS(string addr, string getparam, u16 port = 443)
             {
-                return new WebSocketWSS(addr, getparam, port, msghandler);
+                return new WebSocketWSS(addr, getparam, port);
             }
         }
     }

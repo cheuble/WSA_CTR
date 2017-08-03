@@ -58,7 +58,7 @@ namespace MM
             WSS_Userdata userdata;
             
         public:
-            WebSocketWSS(string addr, string getparam, u16 port, WSMSGFUNC msghandler) : WebSocket(addr, getparam, port, msghandler)
+            WebSocketWSS(string addr, string getparam, u16 port) : WebSocket(addr, getparam, port)
             {
                 userdata.sock = 0;
             }
@@ -133,7 +133,7 @@ namespace MM
             int recv_raw(void* buf, size_t len, int flags = 0)
             {
                 int ret = sslcRead(&userdata.sslc, buf, len, (flags & MSG_PEEK) ? true : false);
-                if((ret & 0xD840B800) == 0xD840B800)
+                if(ret == 0xD840B802)
                 {
                     errno = EWOULDBLOCK;
                     return -1;
@@ -155,7 +155,7 @@ namespace MM
             int send_raw(const void* buf, size_t len, int flags = 0)
             {
                 int ret = sslcWrite(&userdata.sslc, buf, len);
-                if((ret & 0xD840B800) == 0xD840B800)
+                if(ret == 0xD840B803)
                 {
                     errno = EWOULDBLOCK;
                     return -1;
