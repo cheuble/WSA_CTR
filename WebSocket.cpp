@@ -1,82 +1,19 @@
-/*
-    WebSocket.lpp - WebSocket abstraction class
-    Copyright (C) 2017 Sono (https://github.com/MarcuzD)
-    
-    This program is free software: you can redistribute it and/or modify  
-    it under the terms of the GNU Lesser General Public License as   
-    published by the Free Software Foundation, either version 3, or
-    (at your option) any later version.
-    
-    This program is distributed in the hope that it will be useful, but 
-    WITHOUT ANY WARRANTY; without even the implied warranty of 
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-    Lesser General Lesser Public License for more details.
-    
-    You should have received a copy of the GNU Lesser General Public License
-    along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
-#hdr
-#include <3ds.h>
+// WebSocket.cpp
+//
 
-extern "C"
-{
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <poll.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <fcntl.h>
-
-#include <wslay/wslay.h>
-
-#include "WS/dummy.h"
-
-#include "thing.h"
-}
-
-#include <string>
-#include <functional>
-
-using namespace std;
-#end
-
+#include "WebSocket.h"
+#define LZZ_INLINE inline
 namespace MM
 {
-    namespace WS
-    {
-        typedef function<void(wslay_event_context_ptr ctx, const struct wslay_event_on_msg_recv_arg* arg)> WSMSGFUNC;
-        typedef function<void(bool conn)> WSCONNEVT;
-        class WebSocket
-        {
-        protected:
-            string addr;
-            string getparam;
-            u16 port;
-            
-            int sta;
-            int soc_errno;
-            
-            wslay_event_callbacks wslcb;
-            wslay_event_context_ptr wslctx;
-        public:
-            WSMSGFUNC msghandler;
-            WSCONNEVT connevent;
-            
-            WebSocket(string addr, string getparam, u16 port) : addr(addr), getparam(getparam), port(port)
+  namespace WS
+  {
+    WebSocket::WebSocket (string addr, string getparam, u16 port)
+      : addr (addr), getparam (getparam), port (port)
             {
                 sta = 0;
                 soc_errno = 0;
                 
-                wslcb = (wslay_event_callbacks)\
-                {
+                wslcb = (wslay_event_callbacks)                {
                     recv_callback,
                     send_callback,
                     mask_callback,
@@ -88,9 +25,13 @@ namespace MM
                 
                 wslctx = nullptr;
             }
-        
-        private:
-            static ssize_t recv_callback(wslay_event_context_ptr ctx, unsigned char* buf, unsigned int len, int flags, void* user_data)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    ssize_t WebSocket::recv_callback (wslay_event_context_ptr ctx, unsigned char * buf, unsigned int len, int flags, void * user_data)
             {
                 WebSocket* ws = (WebSocket*)user_data;
                 
@@ -114,8 +55,13 @@ namespace MM
                 }
                 else return ret;
             }
-            
-            static ssize_t send_callback(wslay_event_context_ptr ctx, const unsigned char* buf, unsigned int len, int flags, void* user_data)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    ssize_t WebSocket::send_callback (wslay_event_context_ptr ctx, unsigned char const * buf, unsigned int len, int flags, void * user_data)
             {
                 WebSocket* ws = (WebSocket*)user_data;
                 
@@ -136,30 +82,45 @@ namespace MM
                 }
                 else return ret;
             }
-            
-            static int mask_callback(wslay_event_context_ptr ctx, unsigned char* buf, unsigned int len, void* user_data)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocket::mask_callback (wslay_event_context_ptr ctx, unsigned char * buf, unsigned int len, void * user_data)
             {
                 sslcGenerateRandomData(buf, len);
                 
                 return 0;
             }
-            
-            static void wsl_onmsg(wslay_event_context_ptr ctx, const struct wslay_event_on_msg_recv_arg* arg, void* user_data)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    void WebSocket::wsl_onmsg (wslay_event_context_ptr ctx, struct wslay_event_on_msg_recv_arg const * arg, void * user_data)
             {
                 WebSocket* ws = (WebSocket*)user_data;
                 
                 if(ws->msghandler) ws->msghandler(ctx, arg);
             }
-        
-        public:
-            virtual int Connect(int verify = 0) = 0;
-            virtual int Disconnect() { return -1; };
-            virtual int CheckConnect() = 0;
-            virtual int polldata(int wat, int timeo = 0) = 0;
-            virtual int recv_raw(void* buf, size_t len, int flags = 0) = 0;
-            virtual int send_raw(const void* buf, size_t len, int flags = 0) = 0;
-            
-            int Tick()
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocket::Disconnect ()
+                                     { return -1; }
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocket::Tick ()
             {
                 int res = 0;
                 
@@ -199,8 +160,13 @@ namespace MM
                 
                 return 0;
             }
-            
-            int opensock()
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocket::opensock ()
             {
                 struct addrinfo hint;
                 memset(&hint, 0, sizeof(hint));
@@ -253,8 +219,13 @@ namespace MM
                 
                 return sock;
             }
-            
-            int HTTP_Auth(int verify = 0)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocket::HTTP_Auth (int verify)
             {
                 char acceptkey[29];
                 u8 randomdata[16];
@@ -369,30 +340,55 @@ namespace MM
                 delete[] recvbuf;
                 return -1;
             }
-            
-            void Open()
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    void WebSocket::Open ()
             {
                 sta |= 1;
             }
-            
-            void Close()
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    void WebSocket::Close ()
             {
                 sta |= 2;
             }
-            
-            int QueueText(const string str)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocket::QueueText (string const str)
             {
                 struct wslay_event_msg msg = {1, (const u8*)str.c_str(), str.size()};
                 return wslay_event_queue_msg(wslctx, &msg);
             }
-            
-            int QueueBuffer(const void* data, size_t size)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocket::QueueBuffer (void const * data, size_t size)
             {
                 struct wslay_event_msg msg = {2, (const u8*)data, size};
                 return wslay_event_queue_msg(wslctx, &msg);
             }
-            
-            static int pollsock(int sock, int wat, int timeout = 0)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocket::pollsock (int sock, int wat, int timeout)
             {
                 struct pollfd pd;
                 pd.fd = sock;
@@ -402,18 +398,28 @@ namespace MM
                     return pd.revents & wat;
                 return 0;
             }
-            
-            static void sock_mkasync(int fd)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    void WebSocket::sock_mkasync (int fd)
             {
                 int status = fcntl(fd, F_GETFL);
                 fcntl(fd, F_SETFL, status | O_NONBLOCK);
             }
-            
-            virtual ~WebSocket()
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    WebSocket::~ WebSocket ()
             {
                 Disconnect();
                 if(wslctx) wslay_event_context_free(wslctx);
             }
-        }
-    }
+  }
 }
+#undef LZZ_INLINE

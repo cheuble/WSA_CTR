@@ -1,69 +1,24 @@
-/*
-    WebSocketWSS.lpp - Secure WebSocket implementation
-    Copyright (C) 2017 Sono (https://github.com/MarcuzD)
-    
-    This program is free software: you can redistribute it and/or modify  
-    it under the terms of the GNU Lesser General Public License as   
-    published by the Free Software Foundation, either version 3, or
-    (at your option) any later version.
-    
-    This program is distributed in the hope that it will be useful, but 
-    WITHOUT ANY WARRANTY; without even the implied warranty of 
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-    Lesser General Lesser Public License for more details.
-    
-    You should have received a copy of the GNU Lesser General Public License
-    along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
-#hdr
-#include <3ds.h>
+// WebSocketWSS.cpp
+//
 
-extern "C"
-{
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <errno.h>
-#include <poll.h>
-#include <arpa/inet.h>
-
-#include <wslay/wslay.h>
-}
-
-#include <string>
-#include <functional>
-
-
-#include "WS/WebSocket.hpp"
-
-using namespace std;
-using MM::WS::WebSocket;
-#end
-
-
+#include "WebSocketWSS.h"
+#define LZZ_INLINE inline
 namespace MM
 {
-    namespace WS
-    {
-        struct WSS_Userdata
-        {
-            int sock;
-            sslcContext sslc;
-        }
-        
-        class WebSocketWSS : public WebSocket
-        {
-        private:
-            WSS_Userdata userdata;
-            
-        public:
-            WebSocketWSS(string addr, string getparam, u16 port) : WebSocket(addr, getparam, port)
+  namespace WS
+  {
+    WebSocketWSS::WebSocketWSS (string addr, string getparam, u16 port)
+      : WebSocket (addr, getparam, port)
             {
                 userdata.sock = 0;
             }
-            
-            int Connect(int verify = 0)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocketWSS::Connect (int verify)
             {
                 int sock = opensock();
                 if(sock <= 0) return -1;
@@ -104,8 +59,13 @@ namespace MM
                 
                 return 0;
             }
-            
-            int Disconnect()
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocketWSS::Disconnect ()
             {
                 if(userdata.sock)
                 {
@@ -119,18 +79,33 @@ namespace MM
                 
                 return 0;
             }
-            
-            int CheckConnect()
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocketWSS::CheckConnect ()
             {
                 return userdata.sock ? 1 : 0;
             }
-            
-            int polldata(int wat, int timeo = 0)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocketWSS::polldata (int wat, int timeo)
             {
                 return WebSocket::pollsock(userdata.sock, wat, timeo);
             }
-            
-            int recv_raw(void* buf, size_t len, int flags = 0)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocketWSS::recv_raw (void * buf, size_t len, int flags)
             {
                 int ret = sslcRead(&userdata.sslc, buf, len, (flags & MSG_PEEK) ? true : false);
                 if(ret == 0xD840B802)
@@ -151,8 +126,13 @@ namespace MM
                 }
                 return ret;
             }
-            
-            int send_raw(const void* buf, size_t len, int flags = 0)
+  }
+}
+namespace MM
+{
+  namespace WS
+  {
+    int WebSocketWSS::send_raw (void const * buf, size_t len, int flags)
             {
                 int ret = sslcWrite(&userdata.sslc, buf, len);
                 if(ret == 0xD840B803)
@@ -173,6 +153,6 @@ namespace MM
                 }
                 return ret;
             }
-        }
-    }
+  }
 }
+#undef LZZ_INLINE
