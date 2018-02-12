@@ -22,7 +22,7 @@ extern "C"
 #include <functional>
 
 
-#include "WebSocket.hpp"
+#include "WebSocket.h"
 
 using namespace std;
 using MM::WS::WebSocket;
