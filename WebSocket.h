@@ -24,7 +24,7 @@ extern "C"
 
 #include <wslay/wslay.h>
 
-#include "WS/dummy.h"
+#include "dummy.h"
 
 #include "thing.h"
 }

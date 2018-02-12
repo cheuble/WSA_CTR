@@ -3,9 +3,9 @@
 
 #ifndef LZZ_WSHelper_h
 #define LZZ_WSHelper_h
-#include "WS/WebSocket.hpp"
-#include "WS/WebSocketWS.hpp"
-#include "WS/WebSocketWSS.hpp"
+#include "WebSocket.hpp"
+#include "WebSocketWS.hpp"
+#include "WebSocketWSS.hpp"
 #define LZZ_INLINE inline
 namespace MM
 {
