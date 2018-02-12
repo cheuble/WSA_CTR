@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include <nettle/base64.h>
 #include <nettle/sha.h>
+#include <string.h>
 
 void sha1(u8* dst, const u8* src, size_t src_length)
 {
